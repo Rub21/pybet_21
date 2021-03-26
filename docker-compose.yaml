@@ -1,0 +1,10 @@
+version: '3'
+services:
+  pybet:
+    image: rub21/pybet:v1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+        - ./:/pybet_21
+    working_dir: /pybet_21
