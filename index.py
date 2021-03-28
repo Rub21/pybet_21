@@ -1,11 +1,11 @@
+from send_message import telegram_bot_sendtext, checkIfMessageWasSent
+from utils import get_event_details, get_event_markets, get_event_selections, analyse_event
+from config import liveEvent, eventMatch
 import requests
 import json
 from time import sleep
 
-# import config
-from config import liveEvent, eventMatch
-from utils import get_event_details, get_event_markets, get_event_selections, analyse_event
-from send_message import telegram_bot_sendtext, checkIfMessageWasSent
+from db_package import insert
 
 
 def savefile(jsonFile, jsonObj):
@@ -72,17 +72,20 @@ def init():
                     eventInfo.update(marketInfo)
                     eventInfo['url'] = eventConfig["url"]
 
-                    # Store all messsages
-                    all_events_to_bet.append(eventInfo)
+                    # insert into the DB
 
-                    # # Analize
-                    summary = analyse_event([eventInfo], 80)
-                    # # Send message
-                    if len(summary) > 0 and checkIfMessageWasSent(eventId):
-                        print('########################')
-                        print(f'{summary}')
-                        print('########################')
-                        telegram_bot_sendtext(summary)
+                    insert(eventInfo,selectionsObj)
+
+                    # all_events_to_bet.append(eventInfo)
+
+                    # # # Analize
+                    # summary = analyse_event([eventInfo], 80)
+                    # # # Send message
+                    # if len(summary) > 0 and checkIfMessageWasSent(eventId):
+                    #     print('########################')
+                    #     print(f'{summary}')
+                    #     print('########################')
+                    #     telegram_bot_sendtext(summary)
                 except:
                     print("An exception occurred")
 

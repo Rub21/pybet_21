@@ -8,3 +8,14 @@ services:
     volumes:
         - ./:/pybet_21
     working_dir: /pybet_21
+  db:
+    image: postgres:12.6
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_HOST: 'localhost'
+      POSTGRES_DB: 'dbase'
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: '1234'
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
