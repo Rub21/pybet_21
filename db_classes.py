@@ -5,8 +5,7 @@ Database objects for storing Housing Passports-relevant data
 """
 from collections import Counter
 
-from sqlalchemy import (Column, Integer, String, Float,
-                        ForeignKey)
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.dialects.postgresql.json import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -17,7 +16,7 @@ Base = declarative_base()
 
 class Event(Base):
 
-    __tablename__ = 'event'
+    __tablename__ = "event"
     id = Column(Integer, primary_key=True)
     eventId = Column(String)
     seconds = Column(Integer)
@@ -35,12 +34,12 @@ class Event(Base):
 
     def __repr__(self):
         """Define string representation."""
-        return f'<Building(n_detections={len(self.detections)}, neighborhood={self.neighborhood})>'
+        return f"<Building(n_detections={len(self.detections)}, neighborhood={self.neighborhood})>"
 
 
 class Market(Base):
 
-    __tablename__ = 'market'
+    __tablename__ = "market"
     id = Column(Integer, primary_key=True)
 
     event_id = Column(String)
@@ -63,4 +62,3 @@ class Market(Base):
     selection_template_id = Column(String)  # "OVER",
     id_ = Column(String)  # "s-m-f-_CRDlF5TjkyyaGWgKAnHEg-MTG2W-4.5-over",
     label = Column(String)  # "Over 4.5"
-

@@ -10,14 +10,12 @@ RUN pip install sqlalchemy
 RUN pip install geoalchemy2
 RUN pip install sqlalchemy-utils
 RUN pip install psycopg2-binary
-
-
-
 RUN apt-get -y  install libpq-dev 
 RUN pip install psycopg2 
 RUN pip install redshift-sqlalchemy 
 RUN pip install sqlparse
 
+RUN pip install matplotlib
 # COPY . .
 # RUN python setup.py install
 # RUN python -m unittest

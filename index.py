@@ -1,5 +1,11 @@
 from send_message import telegram_bot_sendtext, checkIfMessageWasSent
-from utils import get_event_details, get_event_markets, get_event_selections, analyse_event
+from utils import (
+    get_event_details,
+    get_event_markets,
+    get_event_selections,
+    analyse_event,
+    analyse_markets,
+)
 from config import liveEvent, eventMatch
 import requests
 import json
@@ -32,37 +38,32 @@ def init():
             fixturePopularity = event["fixturePopularity"]
             for eventId, val in fixturePopularity.items():
                 eventConfig = eventMatch(eventId)
-
-                print(eventConfig["url"])
-
-                responseEvent = requests.get(
-                    eventConfig["url"], headers=eventConfig["headers"])
+                # print(eventConfig["url"])
+                responseEvent = requests.get(eventConfig["url"], headers=eventConfig["headers"])
                 responseEvent_dict = json.loads(responseEvent.text)
 
                 # save event
-                savefile(
-                    f"data/02_event_{eventId}_widgets.json", responseEvent_dict)
+                savefile(f"data/02_event_{eventId}_widgets.json", responseEvent_dict)
                 # widgets
                 widgets = responseEvent_dict["data"]["widgets"]
                 eventInfo = {}
                 marketInfo = {}
 
-                ####################################################
-                # Cath error
-                ###################################################
+                need_to_bet = False
+                slug = ""
                 try:
                     for widget in widgets:
                         widgetType = widget["type"]
                         # Check evet info
                         if widgetType == "Event":
                             eventObj = widget["data"]["data"]["scoreboard"]
-                            savefile(
-                                f"data/02_event_{eventId}_{widgetType}.json", eventObj)
+                            savefile(f"data/02_event_{eventId}_{widgetType}.json", eventObj)
                             # Get participants, time and score.
                             eventInfo = get_event_details(eventObj)
                         # Check Market
                         elif widgetType == "MarketList":
                             selectionsObj = widget["data"]["data"]["selections"]
+                            slug = widget["data"]["skeleton"]["slug"]
                             savefile(
                                 f"data/02_event_{eventId}_{widgetType}.json",
                                 selectionsObj,
@@ -70,31 +71,48 @@ def init():
                             marketInfo = get_event_selections(selectionsObj)
 
                     eventInfo.update(marketInfo)
-                    eventInfo['url'] = eventConfig["url"]
-
-                    # insert into the DB
-
-                    insert(eventInfo,selectionsObj)
-
-                    # all_events_to_bet.append(eventInfo)
-
-                    # # # Analize
-                    # summary = analyse_event([eventInfo], 80)
-                    # # # Send message
-                    # if len(summary) > 0 and checkIfMessageWasSent(eventId):
-                    #     print('########################')
-                    #     print(f'{summary}')
-                    #     print('########################')
-                    #     telegram_bot_sendtext(summary)
+                    eventInfo["url"] = eventConfig["url"]
+                    need_to_bet = True
                 except:
-                    print("An exception occurred")
+                    print("=================Some data error")
+                ####################################################
+                # Cath error
+                ###################################################
 
-    savefile("data/all_events_to_bet.json", all_events_to_bet)
+                if need_to_bet:
+                    try:
+                        ###################################################
+                        # insert into the DB
+                        ###################################################
+                        insert(eventInfo, selectionsObj)
+                        ###################################################
+                        # Analyse markets
+                        ###################################################
+                        summary = analyse_markets(eventInfo, selectionsObj, slug)
+                        ###################################################
+                        # Added event to save
+                        ###################################################
+                        all_events_to_bet.append(eventInfo)
+
+                        # # Analize
+                        # summary = analyse_event([eventInfo], 80)
+
+                        # # Send message
+
+                        if summary["bet"] and checkIfMessageWasSent(eventId):
+                            message = summary["message"]
+                            print(f"{message}")
+                            telegram_bot_sendtext(message)
+
+                    except:
+                        print("Error analysing")
+
+    # savefile("data/all_events_to_bet.json", all_events_to_bet)
 
 
 while True:
-    print(chr(27)+'[2j')
-    print('\033c')
-    print('\x1bc')
+    print(chr(27) + "[2j")
+    print("\033c")
+    print("\x1bc")
     init()
     sleep(60)
