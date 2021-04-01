@@ -1,4 +1,4 @@
-from send_message import telegram_bot_sendtext, checkIfMessageWasSent
+from send_message import telegram_bot_sendtext, checkIfMessageWasSent, telegram_bot_sendPhoto
 from utils import (
     get_event_details,
     get_event_markets,
@@ -96,9 +96,9 @@ def init():
 
                         summary = analyse_markets(eventInfo, selectionsObj, slug)
                         # Send message
-                        print("########################")
+                        # print("########################")
                         print(f"{summary}")
-                        print("########################")
+                        # print("########################")
                     except:
                         print("Error summary")
 
@@ -106,11 +106,16 @@ def init():
                     # Check DB and creat the a graph
                     ##################################################
                     try:
+                        if summary["bet"] and checkIfMessageWasSent(eventId, summary["tiempo"]):
+                            match_history = get_match_history(eventInfo["eventId"], 2.0)
+                            img_path = create_line_graph(eventInfo["eventId"], match_history)
+                            print(img_path)
 
-                        match_history = get_match_history(eventInfo["eventId"], 2.0)
-                        create_line_graph(eventInfo["eventId"], match_history)
+                            message = summary["message"]
+                            telegram_bot_sendPhoto(message, img_path)
+
                     except:
-                        print("Error getting history an grap")
+                        print("Error getting history an grap and sending text")
 
                     ##################################################
                     # Check DB and creat the a graph
@@ -120,9 +125,7 @@ def init():
                     # except:
                     #     print("Error sending Telegram")
 
-                    if summary["bet"] and checkIfMessageWasSent(eventId, summary["tiempo"]):
-                        message = summary["message"]
-                        telegram_bot_sendtext(message)
+                    # if summary["bet"] and checkIfMessageWasSent(eventId, summary["tiempo"]):
 
     # savefile("data/all_events_to_bet.json", all_events_to_bet)
 

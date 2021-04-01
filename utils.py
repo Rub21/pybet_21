@@ -60,7 +60,7 @@ def analyse_markets(eventInfo, markets, slug):
         label = market["label"]
 
         # and selectionTemplateId in listOptions
-        odds_eval = odds > 1.0 and odds <= 2
+        # odds_eval = odds > 1.0 and odds <= 2
         odds_eval = True
         tiempo = ""
         if minutes >= 35 and minutes <= 47 and odds_eval:
