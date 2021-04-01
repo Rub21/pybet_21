@@ -5,6 +5,10 @@ import json
 
 bot_token = "1771669981:AAFTLnIoPGvGmpsdIHt4kGO1fGJnmWZa4ng"
 bot_chatID = "-415040970"
+message_file = "messages.json"
+
+with open(message_file, "w") as f:
+    f.write(json.dumps([]))
 
 
 def telegram_bot_sendtext(bot_message):
@@ -19,15 +23,14 @@ def telegram_bot_sendtext(bot_message):
 
 
 # echo "[]" > messages.json
-def checkIfMessageWasSent(eventId):
-    message_file = "messages.json"
+def checkIfMessageWasSent(eventId, tiempo):
+    event_id = f"{tiempo}_{eventId}"
     with open(message_file, "r") as f:
         events = json.load(f)
-
-        if events.count(eventId) < 3:
+        if event_id in events:
             return False
         else:
-            events.append(eventId)
+            events.append(event_id)
             with open(message_file, "w") as f:
                 f.write(json.dumps(events))
             return True

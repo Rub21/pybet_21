@@ -3,15 +3,16 @@ from utils import (
     get_event_details,
     get_event_markets,
     get_event_selections,
-    analyse_event,
     analyse_markets,
+    filterMainMarkets,
 )
 from config import liveEvent, eventMatch
 import requests
 import json
 from time import sleep
 
-from db_package import insert
+from db_package import insert, get_match_history
+from graphs import create_line_graph
 
 
 def savefile(jsonFile, jsonObj):
@@ -80,32 +81,48 @@ def init():
                 ###################################################
 
                 if need_to_bet:
+                    ###################################################
+                    # insert into the DB
+                    ###################################################
                     try:
-                        ###################################################
-                        # insert into the DB
-                        ###################################################
+                        selectionsObj = filterMainMarkets(selectionsObj)
                         insert(eventInfo, selectionsObj)
-                        ###################################################
-                        # Analyse markets
-                        ###################################################
-                        summary = analyse_markets(eventInfo, selectionsObj, slug)
-                        ###################################################
-                        # Added event to save
-                        ###################################################
-                        all_events_to_bet.append(eventInfo)
-
-                        # # Analize
-                        # summary = analyse_event([eventInfo], 80)
-
-                        # # Send message
-
-                        if summary["bet"] and checkIfMessageWasSent(eventId):
-                            message = summary["message"]
-                            print(f"{message}")
-                            telegram_bot_sendtext(message)
-
                     except:
-                        print("Error analysing")
+                        print("Error inserting data")
+                    ###################################################
+                    # Analyse markets
+                    ###################################################
+                    try:
+
+                        summary = analyse_markets(eventInfo, selectionsObj, slug)
+                        # Send message
+                        print("########################")
+                        print(f"{summary}")
+                        print("########################")
+                    except:
+                        print("Error summary")
+
+                    ##################################################
+                    # Check DB and creat the a graph
+                    ##################################################
+                    try:
+
+                        match_history = get_match_history(eventInfo["eventId"], 2.0)
+                        create_line_graph(eventInfo["eventId"], match_history)
+                    except:
+                        print("Error getting history an grap")
+
+                    ##################################################
+                    # Check DB and creat the a graph
+                    ##################################################
+                    # try:
+
+                    # except:
+                    #     print("Error sending Telegram")
+
+                    if summary["bet"] and checkIfMessageWasSent(eventId, summary["tiempo"]):
+                        message = summary["message"]
+                        telegram_bot_sendtext(message)
 
     # savefile("data/all_events_to_bet.json", all_events_to_bet)
 

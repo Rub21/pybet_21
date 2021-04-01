@@ -32,40 +32,12 @@ def get_event_selections(selections):
     return marketInfo
 
 
-def analyse_event(events, evaluteMinute):
-    message = ""
-
-    for event in events:
-        # print(event['seconds'],event['seconds'])
-        eventId = event["eventId"]
-        minutes = event["minutes"]
-        seconds = event["seconds"]
-        t1_id = event["t1_id"]
-        t1_team = event["t1_team"]
-        t1_score = event["t1_score"]
-        t2_id = event["t2_id"]
-        t2_team = event["t2_team"]
-        t2_score = event["t2_score"]
-
-        if minutes > evaluteMinute:
-            message += f'{20*"#"} {minutes}:{seconds}\n'
-            message += f"https://www.betsson.com/pe/apuestas-deportivas/en-vivo/futbol?eventId={eventId}&eti=0\n"
-            if event.get("HOME", "*") != "*":
-                odds = event.get("HOME")["odds"]
-                status = event.get("HOME")["status"]
-                message += f"HOME: {t1_team}({t1_score})-->{odds}({status})\n"
-
-            if event.get("AWAY", "*") != "*":
-                odds = event.get("AWAY")["odds"]
-                status = event.get("AWAY")["status"]
-                message += f"AWAY: {t2_team}({t2_score})-->{odds}({status})\n"
-
-            if event.get("DRAW", "*") != "*":
-                odds = event.get("DRAW")["odds"]
-                status = event.get("DRAW")["status"]
-                message += f"DRAW > {odds}[{status}]"
-            # message += '\n\n\n\n'
-    return message
+def filterMainMarkets(selectionsObj):
+    new_selectionsObj = []
+    for selection in selectionsObj:
+        if "-MW3W-" in selection["id"] or "-MW2W-" in selection["id"]:
+            new_selectionsObj.append(selection)
+    return new_selectionsObj
 
 
 def analyse_markets(eventInfo, markets, slug):
@@ -87,14 +59,18 @@ def analyse_markets(eventInfo, markets, slug):
         selectionTemplateId = market["selectionTemplateId"]
         label = market["label"]
 
-        odds_eval = odds > 1.0 and odds <= 1.3  # and selectionTemplateId in listOptions
-
-        if minutes >= 40 and minutes <= 47 and odds_eval:
+        # and selectionTemplateId in listOptions
+        odds_eval = odds > 1.0 and odds <= 2
+        odds_eval = True
+        tiempo = ""
+        if minutes >= 35 and minutes <= 47 and odds_eval:
             bet = True
+            tiempo = "primer_tiempo"
             message += f"{label}--{odds}\n"
 
-        if minutes >= 85 and odds_eval:
+        if minutes >= 80 and odds_eval:
             bet = True
+            tiempo = "segundo_tiempo"
             message += f"{label}----{odds}\n"
 
-    return {"message": message, "bet": bet}
+    return {"message": message, "bet": bet, "tiempo": tiempo}
